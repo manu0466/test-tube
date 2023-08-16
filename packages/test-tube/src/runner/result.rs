@@ -78,7 +78,8 @@ where
 
     fn try_from(tx_commit_response: TxCommitResponse) -> Result<Self, Self::Error> {
         let res = tx_commit_response.deliver_tx;
-        let tx_msg_data = TxMsgData::decode(res.data.clone()).map_err(DecodeError::ProtoDecodeError)?;
+        let tx_msg_data =
+            TxMsgData::decode(res.data.clone()).map_err(DecodeError::ProtoDecodeError)?;
 
         let msg_data = &tx_msg_data
             .msg_responses

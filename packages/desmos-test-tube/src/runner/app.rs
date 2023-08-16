@@ -8,7 +8,6 @@ use test_tube::runner::result::{RunnerExecuteResult, RunnerResult};
 use test_tube::runner::Runner;
 use test_tube::BaseApp;
 
-
 const FEE_DENOM: &str = "udsm";
 const ADDRESS_PREFIX: &str = "desmos";
 const CHAIN_ID: &str = "desmos-1";
@@ -28,12 +27,7 @@ impl Default for DesmosTestApp {
 impl DesmosTestApp {
     pub fn new() -> Self {
         Self {
-            inner: BaseApp::new(
-                FEE_DENOM,
-                CHAIN_ID,
-                ADDRESS_PREFIX,
-                DEFAULT_GAS_ADJUSTMENT,
-            ),
+            inner: BaseApp::new(FEE_DENOM, CHAIN_ID, ADDRESS_PREFIX, DEFAULT_GAS_ADJUSTMENT),
         }
     }
 
@@ -89,8 +83,8 @@ impl DesmosTestApp {
         msgs: I,
         signer: &SigningAccount,
     ) -> RunnerResult<cosmrs::proto::cosmos::base::abci::v1beta1::GasInfo>
-        where
-            I: IntoIterator<Item = cosmrs::Any>,
+    where
+        I: IntoIterator<Item = cosmrs::Any>,
     {
         self.inner.simulate_tx(msgs, signer)
     }
@@ -116,9 +110,9 @@ impl<'a> Runner<'a> for DesmosTestApp {
         msgs: &[(M, &str)],
         signer: &SigningAccount,
     ) -> RunnerExecuteResult<R>
-        where
-            M: ::prost::Message,
-            R: ::prost::Message + Default,
+    where
+        M: ::prost::Message,
+        R: ::prost::Message + Default,
     {
         self.inner.execute_multiple(msgs, signer)
     }
@@ -128,16 +122,16 @@ impl<'a> Runner<'a> for DesmosTestApp {
         msgs: Vec<cosmrs::Any>,
         signer: &SigningAccount,
     ) -> RunnerExecuteResult<R>
-        where
-            R: prost::Message + Default,
+    where
+        R: prost::Message + Default,
     {
         self.inner.execute_multiple_raw(msgs, signer)
     }
 
     fn query<Q, R>(&self, path: &str, q: &Q) -> RunnerResult<R>
-        where
-            Q: ::prost::Message,
-            R: ::prost::Message + DeserializeOwned + Default,
+    where
+        Q: ::prost::Message,
+        R: ::prost::Message + DeserializeOwned + Default,
     {
         self.inner.query(path, q)
     }
@@ -148,15 +142,21 @@ mod tests {
     use prost::Message;
     use std::option::Option::None;
 
-    use cosmrs::Any;
+    use crate::runner::app::DesmosTestApp;
     use cosmrs::proto::cosmos::base::abci::v1beta1::GasInfo;
     use cosmrs::proto::tendermint::abci::ResponseDeliverTx;
     use cosmrs::tx::MessageExt;
-    use cosmwasm_std::{attr, coins, Coin, Addr, coin, Event};
+    use cosmrs::Any;
+    use cosmwasm_std::{attr, coin, coins, Addr, Coin, Event};
     use desmos_bindings::profiles::msg::ProfilesMsg;
-    use desmos_bindings::profiles::types::{MsgDeleteProfile, MsgDeleteProfileResponse, MsgSaveProfile, MsgSaveProfileResponse, Profile, QueryProfileRequest, QueryProfileResponse};
-    use desmos_bindings::reports::types::{QueryParamsRequest as QueryReportsParamsRequest, QueryParamsResponse as QueryReportsParamsResponse};
-    use crate::runner::app::DesmosTestApp;
+    use desmos_bindings::profiles::types::{
+        MsgDeleteProfile, MsgDeleteProfileResponse, MsgSaveProfile, MsgSaveProfileResponse,
+        Profile, QueryProfileRequest, QueryProfileResponse,
+    };
+    use desmos_bindings::reports::types::{
+        QueryParamsRequest as QueryReportsParamsRequest,
+        QueryParamsResponse as QueryReportsParamsResponse,
+    };
     use test_tube::account::{Account, FeeSetting};
     use test_tube::module::Module;
     use test_tube::ExecuteResponse;
@@ -216,7 +216,8 @@ mod tests {
         let addr = acc.address();
 
         // Create a profile
-        let msg = ProfilesMsg::save_profile(Some("test"), None, None, None, None, Addr::unchecked(&addr));
+        let msg =
+            ProfilesMsg::save_profile(Some("test"), None, None, None, None, Addr::unchecked(&addr));
         let res: ExecuteResponse<MsgDeleteProfileResponse> =
             app.execute(msg, MsgSaveProfile::TYPE_URL, &acc).unwrap();
 
@@ -227,8 +228,20 @@ mod tests {
             .unwrap()
             .attributes;
 
-        assert_eq!(create_denom_attrs.iter().find(|attr| attr.key.eq("profile_dtag")).unwrap(), attr("profile_dtag", "test"));
-        assert_eq!(create_denom_attrs.iter().find(|attr| attr.key.eq("profile_creator")).unwrap(), attr("profile_creator", &addr));
+        assert_eq!(
+            create_denom_attrs
+                .iter()
+                .find(|attr| attr.key.eq("profile_dtag"))
+                .unwrap(),
+            attr("profile_dtag", "test")
+        );
+        assert_eq!(
+            create_denom_attrs
+                .iter()
+                .find(|attr| attr.key.eq("profile_creator"))
+                .unwrap(),
+            attr("profile_creator", &addr)
+        );
     }
 
     #[test]
