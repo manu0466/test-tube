@@ -19,6 +19,7 @@ use test_tube::{fn_execute, fn_query, Module, Runner};
 
 /// Profiles module.
 pub struct Profiles<'a, R: Runner<'a>> {
+    #[allow(dead_code)]
     runner: &'a R,
 }
 
