@@ -1,6 +1,5 @@
 use cosmrs::Any;
 use cosmwasm_std::{Coin, Timestamp};
-use desmos_bindings::profiles::types::Profile;
 use prost::Message;
 use serde::de::DeserializeOwned;
 use test_tube::account::SigningAccount;
