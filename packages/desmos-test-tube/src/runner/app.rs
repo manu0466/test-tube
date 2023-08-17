@@ -31,52 +31,62 @@ impl DesmosTestApp {
     }
 
     /// Get the current block time as a timestamp
+    #[allow(dead_code)]
     pub fn get_block_timestamp(&self) -> Timestamp {
         self.inner.get_block_timestamp()
     }
 
     /// Get the current block time in nanoseconds
+    #[allow(dead_code)]
     pub fn get_block_time_nanos(&self) -> i64 {
         self.inner.get_block_time_nanos()
     }
 
     /// Get the current block time in seconds
+    #[allow(dead_code)]
     pub fn get_block_time_seconds(&self) -> i64 {
         self.inner.get_block_time_nanos() / 1_000_000_000i64
     }
 
     /// Get the current block height
+    #[allow(dead_code)]
     pub fn get_block_height(&self) -> i64 {
         self.inner.get_block_height()
     }
 
     /// Get the first validator address
+    #[allow(dead_code)]
     pub fn get_first_validator_address(&self) -> RunnerResult<String> {
         self.inner.get_first_validator_address()
     }
 
     /// Get the first validator signing account
+    #[allow(dead_code)]
     pub fn get_first_validator_signing_account(&self) -> RunnerResult<SigningAccount> {
         self.inner.get_first_validator_signing_account()
     }
 
     /// Increase the time of the blockchain by the given number of seconds.
+    #[allow(dead_code)]
     pub fn increase_time(&self, seconds: u64) {
         self.inner.increase_time(seconds)
     }
 
     /// Initialize account with initial balance of any coins.
     /// This function mints new coins and send to newly created account
+    #[allow(dead_code)]
     pub fn init_account(&self, coins: &[Coin]) -> RunnerResult<SigningAccount> {
         self.inner.init_account(coins)
     }
     /// Convinience function to create multiple accounts with the same
     /// Initial coins balance
+    #[allow(dead_code)]
     pub fn init_accounts(&self, coins: &[Coin], count: u64) -> RunnerResult<Vec<SigningAccount>> {
         self.inner.init_accounts(coins, count)
     }
 
     /// Simulate transaction execution and return gas info
+    #[allow(dead_code)]
     pub fn simulate_tx<I>(
         &self,
         msgs: I,
@@ -89,11 +99,13 @@ impl DesmosTestApp {
     }
 
     /// Set parameter set for a given subspace.
+    #[allow(dead_code)]
     pub fn set_param_set(&self, subspace: &str, pset: impl Into<Any>) -> RunnerResult<()> {
         self.inner.set_param_set(subspace, pset)
     }
 
     /// Get parameter set for a given subspace.
+    #[allow(dead_code)]
     pub fn get_param_set<P: Message + Default>(
         &self,
         subspace: &str,
@@ -138,28 +150,19 @@ impl<'a> Runner<'a> for DesmosTestApp {
 
 #[cfg(test)]
 mod tests {
-    use prost::Message;
     use std::option::Option::None;
 
     use crate::runner::app::DesmosTestApp;
-    use cosmrs::proto::cosmos::base::abci::v1beta1::GasInfo;
-    use cosmrs::proto::tendermint::abci::ResponseDeliverTx;
-    use cosmrs::tx::MessageExt;
-    use cosmrs::Any;
-    use cosmwasm_std::{attr, coin, coins, Addr, Coin, Event};
+    use cosmwasm_std::{attr, coin, coins, Addr};
     use desmos_bindings::profiles::msg::ProfilesMsg;
-    use desmos_bindings::profiles::types::{
-        MsgDeleteProfile, MsgDeleteProfileResponse, MsgSaveProfile, MsgSaveProfileResponse,
-        Profile, QueryProfileRequest, QueryProfileResponse,
-    };
+    use desmos_bindings::profiles::types::{MsgDeleteProfileResponse, MsgSaveProfile};
     use desmos_bindings::reports::types::{
         QueryParamsRequest as QueryReportsParamsRequest,
         QueryParamsResponse as QueryReportsParamsResponse,
     };
     use test_tube::account::{Account, FeeSetting};
-    use test_tube::module::Module;
+    use test_tube::runner::*;
     use test_tube::ExecuteResponse;
-    use test_tube::{runner::*, RunnerError};
 
     #[test]
     fn test_init_accounts() {
