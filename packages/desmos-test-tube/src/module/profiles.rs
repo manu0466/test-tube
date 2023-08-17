@@ -79,21 +79,97 @@ where
 mod tests {
     use crate::module::Profiles;
     use crate::runner::app::DesmosTestApp;
-    use cosmwasm_std::{coins, Addr};
+    use cosmwasm_std::{coin, coins, Addr};
+    use desmos_bindings::cosmos_types::Any;
     use desmos_bindings::profiles::msg::ProfilesMsg;
     use desmos_bindings::profiles::types::{
-        MsgAcceptDTagTransferRequest, MsgCancelDTagTransferRequest, MsgRefuseDTagTransferRequest,
-        MsgRequestDTagTransfer,
+        AddressData, Bech32Address, ChainConfig, MsgAcceptDTagTransferRequest,
+        MsgCancelDTagTransferRequest, MsgRefuseDTagTransferRequest, MsgRequestDTagTransfer,
+        Profile, Proof, QueryChainLinkOwnersRequest, QueryChainLinksRequest,
+        QueryIncomingDTagTransferRequestsRequest, QueryProfileRequest, SignatureValueType,
+        SingleSignature,
     };
-    use test_tube::{Account, Module};
+    use prost::Message;
+    use test_tube::{Account, Module, SigningAccount};
+
+    /// Create a profile for the provided [SigningAccount].
+    fn create_profile_for_user(app: &DesmosTestApp, account: &SigningAccount) {
+        let profiles = Profiles::new(app);
+
+        let mut dtag = account.address();
+        dtag.truncate(30);
+        profiles
+            .save_profile(
+                ProfilesMsg::save_profile(
+                    Some(&dtag),
+                    None,
+                    None,
+                    None,
+                    None,
+                    Addr::unchecked(account.address()),
+                ),
+                account,
+            )
+            .unwrap();
+    }
+
+    /// Creates a new [SigningAccount] and performs a chain link it to connect the newly
+    /// generated [SigningAccount] to the provided [SigningAccount].
+    fn link_account(app: &DesmosTestApp, account: &SigningAccount) -> SigningAccount {
+        let profiles = Profiles::new(app);
+
+        // Create a new account to generate the chain link.
+        let new_account = app.init_account(&[]).unwrap();
+        let new_account_pub_key = new_account.public_key().to_any().unwrap();
+        // Sign the account address to generate the proof.
+        let signature = new_account
+            .signing_key()
+            .sign(account.address().as_bytes())
+            .unwrap();
+        // Encode the signature object.
+        let mut encoded_signature = Vec::<u8>::new();
+        SingleSignature {
+            value_type: SignatureValueType::Raw.into(),
+            signature: signature.to_vec(),
+        }
+        .encode(&mut encoded_signature)
+        .unwrap();
+
+        // Perform the chain link.
+        profiles
+            .link_chain_account(
+                ProfilesMsg::link_chain_account(
+                    AddressData::Bech32Address(Bech32Address {
+                        value: new_account.address(),
+                        prefix: new_account.prefix().to_string(),
+                    }),
+                    Proof {
+                        pub_key: Some(new_account_pub_key.into()),
+                        plain_text: hex::encode(account.address()),
+                        signature: Some(Any {
+                            type_url: "/desmos.profiles.v3.SingleSignature".to_string(),
+                            value: encoded_signature,
+                        }),
+                    },
+                    ChainConfig {
+                        name: "desmos".to_string(),
+                    },
+                    Addr::unchecked(account.address()),
+                ),
+                &account,
+            )
+            .unwrap();
+
+        return new_account;
+    }
 
     #[test]
-    fn test_profile_managment() {
+    fn test_profile_management() {
         let app = DesmosTestApp::new();
         let account = app.init_account(&coins(100_000_000_000, "udsm")).unwrap();
 
         let profiles = Profiles::new(&app);
-        let _response = profiles
+        profiles
             .save_profile(
                 ProfilesMsg::save_profile(
                     Some("test"),
@@ -107,7 +183,18 @@ mod tests {
             )
             .unwrap();
 
-        let _response = profiles
+        // Test profile query.
+        let profile = profiles
+            .query_profile(&QueryProfileRequest {
+                user: account.address(),
+            })
+            .unwrap()
+            .profile
+            .unwrap();
+        let desmos_profile = Profile::try_from(profile).unwrap();
+        assert_eq!("test", desmos_profile.dtag);
+
+        profiles
             .delete_profile(
                 ProfilesMsg::delete_profile(Addr::unchecked(&account.address())),
                 &account,
@@ -125,21 +212,7 @@ mod tests {
 
         // Create the profile for each account
         accounts.iter().for_each(|account| {
-            let mut dtag = account.address();
-            dtag.truncate(30);
-            profiles
-                .save_profile(
-                    ProfilesMsg::save_profile(
-                        Some(&dtag),
-                        None,
-                        None,
-                        None,
-                        None,
-                        Addr::unchecked(account.address()),
-                    ),
-                    account,
-                )
-                .unwrap();
+            create_profile_for_user(&app, account);
         });
 
         // Test DTag transfer from account 1 to account 0
@@ -152,6 +225,20 @@ mod tests {
                 &accounts[0],
             )
             .unwrap();
+
+        // Query the transfer request
+        let requests = profiles
+            .query_incoming_dtag_transfer_requests(&QueryIncomingDTagTransferRequestsRequest {
+                receiver: accounts[1].address(),
+                pagination: None,
+            })
+            .unwrap()
+            .requests;
+        let request = requests.first().unwrap();
+        assert_eq!(accounts[0].address(), request.sender);
+        let mut dtag_to_trade = accounts[1].address();
+        dtag_to_trade.truncate(30);
+        assert_eq!(dtag_to_trade, request.dtag_to_trade);
 
         // Accept the transfer
         profiles
@@ -264,5 +351,92 @@ mod tests {
                 &accounts[1],
             )
             .unwrap();
+    }
+
+    #[test]
+    fn test_chain_link_manipulation() {
+        let app = DesmosTestApp::new();
+        let profiles = Profiles::new(&app);
+        let account = app.init_account(&coins(100_000_000_000, "udsm")).unwrap();
+
+        // Create a profile to perform the chain link.
+        profiles
+            .save_profile(
+                ProfilesMsg::save_profile(
+                    Some("test"),
+                    None,
+                    None,
+                    None,
+                    None,
+                    Addr::unchecked(&account.address()),
+                ),
+                &account,
+            )
+            .unwrap();
+
+        // Link the osmosis account.
+        let linked_account = link_account(&app, &account);
+
+        // Set the default address.
+        profiles
+            .set_default_external_address(
+                ProfilesMsg::set_default_external_address(
+                    "desmos",
+                    linked_account.address().as_str(),
+                    Addr::unchecked(account.address()),
+                ),
+                &account,
+            )
+            .unwrap();
+
+        // Unlink the previously linked account.
+        profiles
+            .unlink_chain_account(
+                ProfilesMsg::unlink_chain_account(
+                    Addr::unchecked(account.address()),
+                    "desmos",
+                    linked_account.address().as_str(),
+                ),
+                &account,
+            )
+            .unwrap();
+    }
+
+    #[test]
+    fn test_query_chain_link() {
+        let app = DesmosTestApp::new();
+        let profiles = Profiles::new(&app);
+        let account = app.init_account(&[coin(100_000_000_000, "udsm")]).unwrap();
+
+        create_profile_for_user(&app, &account);
+        let linked_account = link_account(&app, &account);
+
+        let links = profiles
+            .query_chain_links(&QueryChainLinksRequest {
+                user: account.address(),
+                chain_name: "desmos".to_string(),
+                target: "".to_string(),
+                pagination: None,
+            })
+            .unwrap()
+            .links;
+
+        assert_eq!(1, links.len());
+        let any_address = links.first().unwrap().address.clone().unwrap();
+        let linked_address = Bech32Address::try_from(any_address).unwrap();
+        assert_eq!(linked_account.address(), linked_address.value);
+
+        // Try the reverse query
+        let owners = profiles
+            .query_chain_link_owners(&QueryChainLinkOwnersRequest {
+                chain_name: "desmos".to_string(),
+                target: linked_account.address(),
+                pagination: None,
+            })
+            .unwrap()
+            .owners;
+
+        assert_eq!(1, owners.len());
+        assert_eq!(account.address(), owners.first().unwrap().user);
     }
 }
