@@ -134,7 +134,7 @@ mod tests {
                         None,
                         None,
                         None,
-                        Addr::unchecked(&account.address()),
+                        Addr::unchecked(account.address()),
                     ),
                     account,
                 )
@@ -185,7 +185,7 @@ mod tests {
                         None,
                         None,
                         None,
-                        Addr::unchecked(&account.address()),
+                        Addr::unchecked(account.address()),
                     ),
                     account,
                 )
@@ -210,7 +210,7 @@ mod tests {
                     sender: (&accounts[0]).address(),
                     receiver: (&accounts[1]).address(),
                 },
-                &accounts[1],
+                &accounts[0],
             )
             .unwrap();
     }
