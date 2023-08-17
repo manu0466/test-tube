@@ -4,6 +4,8 @@ mod reactions;
 mod relationships;
 mod reports;
 mod subspaces;
+#[cfg(test)]
+mod test_utils;
 
 pub use test_tube::macros;
 pub use test_tube::module::bank;
