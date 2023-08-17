@@ -82,7 +82,8 @@ mod tests {
     use cosmwasm_std::{coins, Addr};
     use desmos_bindings::profiles::msg::ProfilesMsg;
     use desmos_bindings::profiles::types::{
-        MsgAcceptDTagTransferRequest, MsgCancelDTagTransferRequest, MsgRequestDTagTransfer,
+        MsgAcceptDTagTransferRequest, MsgCancelDTagTransferRequest, MsgRefuseDTagTransferRequest,
+        MsgRequestDTagTransfer,
     };
     use test_tube::{Account, Module};
 
@@ -211,6 +212,56 @@ mod tests {
                     receiver: (&accounts[1]).address(),
                 },
                 &accounts[0],
+            )
+            .unwrap();
+    }
+
+    #[test]
+    fn test_refuse_dtag_transfer() {
+        let app = DesmosTestApp::new();
+        let profiles = Profiles::new(&app);
+        let accounts = app
+            .init_accounts(&coins(100_000_000_000, "udsm"), 2)
+            .unwrap();
+
+        // Create the profile for each account
+        accounts.iter().for_each(|account| {
+            let mut dtag = account.address();
+            dtag.truncate(30);
+            profiles
+                .save_profile(
+                    ProfilesMsg::save_profile(
+                        Some(&dtag),
+                        None,
+                        None,
+                        None,
+                        None,
+                        Addr::unchecked(account.address()),
+                    ),
+                    account,
+                )
+                .unwrap();
+        });
+
+        // Test DTag transfer from account 1 to account 0
+        profiles
+            .request_dtag_transfer(
+                MsgRequestDTagTransfer {
+                    sender: (&accounts[0]).address(),
+                    receiver: (&accounts[1]).address(),
+                },
+                &accounts[0],
+            )
+            .unwrap();
+
+        // Refuse the transfer
+        profiles
+            .refuse_dtag_transfer_request(
+                MsgRefuseDTagTransferRequest {
+                    sender: (&accounts[0]).address(),
+                    receiver: (&accounts[1]).address(),
+                },
+                &accounts[1],
             )
             .unwrap();
     }
