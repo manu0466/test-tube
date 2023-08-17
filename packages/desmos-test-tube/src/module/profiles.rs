@@ -50,28 +50,28 @@ where
     // ========== Queries ==========
 
     fn_query! {
-        query_profile ["/desmos.profiles.v3.Query/Profile"]: QueryProfileRequest => QueryProfileResponse
+        pub query_profile ["/desmos.profiles.v3.Query/Profile"]: QueryProfileRequest => QueryProfileResponse
     }
     fn_query! {
-        query_incoming_dtag_transfer_requests ["/desmos.profiles.v3.Query/IncomingDTagTransferRequests"]: QueryIncomingDTagTransferRequestsRequest => QueryIncomingDTagTransferRequestsResponse
+        pub query_incoming_dtag_transfer_requests ["/desmos.profiles.v3.Query/IncomingDTagTransferRequests"]: QueryIncomingDTagTransferRequestsRequest => QueryIncomingDTagTransferRequestsResponse
     }
     fn_query! {
-        query_chain_links ["/desmos.profiles.v3.Query/ChainLinks"]: QueryChainLinksRequest => QueryChainLinksResponse
+        pub query_chain_links ["/desmos.profiles.v3.Query/ChainLinks"]: QueryChainLinksRequest => QueryChainLinksResponse
     }
     fn_query! {
-        query_chain_link_owners ["/desmos.profiles.v3.Query/ChainLinkOwners"]: QueryChainLinkOwnersRequest => QueryChainLinkOwnersResponse
+        pub query_chain_link_owners ["/desmos.profiles.v3.Query/ChainLinkOwners"]: QueryChainLinkOwnersRequest => QueryChainLinkOwnersResponse
     }
     fn_query! {
-        query_default_external_addresses ["/desmos.profiles.v3.Query/DefaultExternalAddresses"]: QueryDefaultExternalAddressesRequest => QueryDefaultExternalAddressesResponse
+        pub query_default_external_addresses ["/desmos.profiles.v3.Query/DefaultExternalAddresses"]: QueryDefaultExternalAddressesRequest => QueryDefaultExternalAddressesResponse
     }
     fn_query! {
-        query_application_links ["/desmos.profiles.v3.Query/ApplicationLinks"]: QueryApplicationLinksRequest => QueryApplicationLinksResponse
+        pub query_application_links ["/desmos.profiles.v3.Query/ApplicationLinks"]: QueryApplicationLinksRequest => QueryApplicationLinksResponse
     }
     fn_query! {
-        query_application_link_by_client_id ["/desmos.profiles.v3.Query/ApplicationLinkByClientID"]: QueryApplicationLinkByClientIdRequest => QueryApplicationLinkByClientIdResponse
+        pub query_application_link_by_client_id ["/desmos.profiles.v3.Query/ApplicationLinkByClientID"]: QueryApplicationLinkByClientIdRequest => QueryApplicationLinkByClientIdResponse
     }
     fn_query! {
-        query_application_link_owners ["/desmos.profiles.v3.Query/ApplicationLinkOwners"]: QueryApplicationLinkOwnersRequest => QueryApplicationLinkOwnersResponse
+        pub query_application_link_owners ["/desmos.profiles.v3.Query/ApplicationLinkOwners"]: QueryApplicationLinkOwnersRequest => QueryApplicationLinkOwnersResponse
     }
 }
 

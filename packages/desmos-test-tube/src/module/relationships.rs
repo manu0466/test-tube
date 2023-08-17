@@ -31,9 +31,9 @@ where
     // ========== Queries ==========
 
     fn_query! {
-        query_relationships ["/desmos.relationships.v1.Query/Relationships"]: QueryRelationshipsRequest => QueryRelationshipsResponse
+        pub query_relationships ["/desmos.relationships.v1.Query/Relationships"]: QueryRelationshipsRequest => QueryRelationshipsResponse
     }
     fn_query! {
-        query_blocks ["/desmos.relationships.v1.Query/Blocks"]: QueryBlocksRequest => QueryBlocksResponse
+        pub query_blocks ["/desmos.relationships.v1.Query/Blocks"]: QueryBlocksRequest => QueryBlocksResponse
     }
 }

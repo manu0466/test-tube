@@ -35,9 +35,9 @@ where
 
     // ========== Queries ==========
 
-    fn_query! { query_reports ["/desmos.reports.v1.Query/Reports"]: QueryReportsRequest => QueryReportsResponse }
-    fn_query! { query_report ["/desmos.reports.v1.Query/Report"]: QueryReportRequest => QueryReportResponse }
-    fn_query! { query_reasons ["/desmos.reports.v1.Query/Reasons"]: QueryReasonsRequest => QueryReasonsResponse }
-    fn_query! { query_reason ["/desmos.reports.v1.Query/Reason"]: QueryReasonRequest => QueryReasonResponse }
-    fn_query! { query_params ["/desmos.reports.v1.Query/Params"]: QueryParamsRequest => QueryParamsResponse }
+    fn_query! { pub query_reports ["/desmos.reports.v1.Query/Reports"]: QueryReportsRequest => QueryReportsResponse }
+    fn_query! { pub query_report ["/desmos.reports.v1.Query/Report"]: QueryReportRequest => QueryReportResponse }
+    fn_query! { pub query_reasons ["/desmos.reports.v1.Query/Reasons"]: QueryReasonsRequest => QueryReasonsResponse }
+    fn_query! { pub query_reason ["/desmos.reports.v1.Query/Reason"]: QueryReasonRequest => QueryReasonResponse }
+    fn_query! { pub query_params ["/desmos.reports.v1.Query/Params"]: QueryParamsRequest => QueryParamsResponse }
 }

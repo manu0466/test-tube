@@ -38,22 +38,22 @@ where
     // ========== Queries ==========
 
     fn_query! {
-        query_subspace_posts ["/desmos.posts.v3.Query/SubspacePosts"]: QuerySubspacePostsRequest => QuerySubspacePostsResponse
+        pub query_subspace_posts ["/desmos.posts.v3.Query/SubspacePosts"]: QuerySubspacePostsRequest => QuerySubspacePostsResponse
     }
     fn_query! {
-        query_section_posts ["/desmos.posts.v3.Query/SectionPosts"]: QuerySectionPostsRequest => QuerySectionPostsResponse
+        pub query_section_posts ["/desmos.posts.v3.Query/SectionPosts"]: QuerySectionPostsRequest => QuerySectionPostsResponse
     }
     fn_query! {
-        query_post ["/desmos.posts.v3.Query/Post"]: QueryPostRequest => QueryPostResponse
+        pub query_post ["/desmos.posts.v3.Query/Post"]: QueryPostRequest => QueryPostResponse
     }
     fn_query! {
-        query_post_attachments ["/desmos.posts.v3.Query/PostAttachments"]: QueryPostAttachmentsRequest => QueryPostAttachmentsResponse
+        pub query_post_attachments ["/desmos.posts.v3.Query/PostAttachments"]: QueryPostAttachmentsRequest => QueryPostAttachmentsResponse
     }
     fn_query! {
-        query_poll_answers ["/desmos.posts.v3.Query/PollAnswers"]: QueryPollAnswersRequest => QueryPollAnswersResponse
+        pub query_poll_answers ["/desmos.posts.v3.Query/PollAnswers"]: QueryPollAnswersRequest => QueryPollAnswersResponse
     }
     fn_query! {
-        query_params ["/desmos.posts.v3.Query/Params"]: QueryParamsRequest => QueryParamsResponse
+        pub query_params ["/desmos.posts.v3.Query/Params"]: QueryParamsRequest => QueryParamsResponse
     }
 }
 

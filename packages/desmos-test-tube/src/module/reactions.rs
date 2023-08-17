@@ -38,18 +38,18 @@ where
     // ========== Queries ==========
 
     fn_query! {
-        query_reactions ["/desmos.reactions.v1.Query/Reactions"]:  QueryReactionsRequest => QueryReactionsResponse
+        pub query_reactions ["/desmos.reactions.v1.Query/Reactions"]:  QueryReactionsRequest => QueryReactionsResponse
     }
     fn_query! {
-        query_reaction ["/desmos.reactions.v1.Query/Reaction"]:  QueryReactionRequest => QueryReactionResponse
+        pub query_reaction ["/desmos.reactions.v1.Query/Reaction"]:  QueryReactionRequest => QueryReactionResponse
     }
     fn_query! {
-        query_registered_reactions ["/desmos.reactions.v1.Query/RegisteredReactions"]:  QueryRegisteredReactionsRequest => QueryRegisteredReactionsResponse
+        pub query_registered_reactions ["/desmos.reactions.v1.Query/RegisteredReactions"]:  QueryRegisteredReactionsRequest => QueryRegisteredReactionsResponse
     }
     fn_query! {
-        query_registered_reaction ["/desmos.reactions.v1.Query/RegisteredReaction"]:  QueryRegisteredReactionRequest => QueryRegisteredReactionResponse
+        pub query_registered_reaction ["/desmos.reactions.v1.Query/RegisteredReaction"]:  QueryRegisteredReactionRequest => QueryRegisteredReactionResponse
     }
     fn_query! {
-        query_params ["/desmos.reactions.v1.Query/ReactionsParams"]:  QueryReactionsParamsRequest => QueryReactionsParamsResponse
+        pub query_params ["/desmos.reactions.v1.Query/ReactionsParams"]:  QueryReactionsParamsRequest => QueryReactionsParamsResponse
     }
 }

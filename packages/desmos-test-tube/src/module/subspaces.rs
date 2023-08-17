@@ -61,33 +61,33 @@ where
     // ========== Queries ==========
 
     fn_query! {
-        query_subspaces ["/desmos.subspaces.v3.Query/Subspaces"]: QuerySubspacesRequest => QuerySubspacesResponse
+        pub query_subspaces ["/desmos.subspaces.v3.Query/Subspaces"]: QuerySubspacesRequest => QuerySubspacesResponse
     }
     fn_query! {
-        query_subspace ["/desmos.subspaces.v3.Query/Subspace"]: QuerySubspaceRequest => QuerySubspaceResponse
+        pub query_subspace ["/desmos.subspaces.v3.Query/Subspace"]: QuerySubspaceRequest => QuerySubspaceResponse
     }
     fn_query! {
-        query_sections ["/desmos.subspaces.v3.Query/Sections"]: QuerySectionsRequest => QuerySectionsResponse
+        pub query_sections ["/desmos.subspaces.v3.Query/Sections"]: QuerySectionsRequest => QuerySectionsResponse
     }
     fn_query! {
-        query_section ["/desmos.subspaces.v3.Query/Section"]: QuerySectionRequest => QuerySectionResponse
+        pub query_section ["/desmos.subspaces.v3.Query/Section"]: QuerySectionRequest => QuerySectionResponse
     }
     fn_query! {
-        query_user_groups ["/desmos.subspaces.v3.Query/UserGroups"]: QueryUserGroupsRequest => QueryUserGroupsResponse
+        pub query_user_groups ["/desmos.subspaces.v3.Query/UserGroups"]: QueryUserGroupsRequest => QueryUserGroupsResponse
     }
     fn_query! {
-        query_user_group ["/desmos.subspaces.v3.Query/UserGroup"]: QueryUserGroupRequest => QueryUserGroupResponse
+        pub query_user_group ["/desmos.subspaces.v3.Query/UserGroup"]: QueryUserGroupRequest => QueryUserGroupResponse
     }
     fn_query! {
-        query_user_group_members ["/desmos.subspaces.v3.Query/UserGroupMembers"]: QueryUserGroupMembersRequest => QueryUserGroupMembersResponse
+        pub query_user_group_members ["/desmos.subspaces.v3.Query/UserGroupMembers"]: QueryUserGroupMembersRequest => QueryUserGroupMembersResponse
     }
     fn_query! {
-        query_user_permissions ["/desmos.subspaces.v3.Query/UserPermissions"]: QueryUserPermissionsRequest => QueryUserPermissionsResponse
+        pub query_user_permissions ["/desmos.subspaces.v3.Query/UserPermissions"]: QueryUserPermissionsRequest => QueryUserPermissionsResponse
     }
     fn_query! {
-        query_uer_allowances ["/desmos.subspaces.v3.Query/UserAllowances"]: QueryUserAllowancesRequest => QueryUserAllowancesResponse
+        pub query_uer_allowances ["/desmos.subspaces.v3.Query/UserAllowances"]: QueryUserAllowancesRequest => QueryUserAllowancesResponse
     }
     fn_query! {
-        query_group_allowances ["/desmos.subspaces.v3.Query/GroupAllowances"]: QueryGroupAllowancesRequest => QueryGroupAllowancesResponse
+        pub query_group_allowances ["/desmos.subspaces.v3.Query/GroupAllowances"]: QueryGroupAllowancesRequest => QueryGroupAllowancesResponse
     }
 }
