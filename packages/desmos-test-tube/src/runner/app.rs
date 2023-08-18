@@ -158,11 +158,11 @@ mod tests {
     use desmos_bindings::profiles::types::{MsgDeleteProfileResponse, MsgSaveProfile};
     use desmos_bindings::reports::types::{
         QueryParamsRequest as QueryReportsParamsRequest,
-        QueryParamsResponse as QueryReportsParamsResponse,
+        QueryParamsResponse as QueryReportsParamsResponse, StandardReason,
     };
     use test_tube::account::{Account, FeeSetting};
     use test_tube::runner::*;
-    use test_tube::ExecuteResponse;
+    use test_tube::{ExecuteResponse, Module, Wasm};
 
     #[test]
     fn test_init_accounts() {
@@ -261,51 +261,21 @@ mod tests {
             .standard_reasons;
 
         // fee is no longer set
-        assert_eq!(standard_reasons, [])
-    }
-
-    /*
-    #[test]
-    fn test_multiple_as_module() {
-        let app = DesmosTestApp::default();
-        let alice = app
-            .init_account(&[
-                Coin::new(1_000_000_000_000, "uatom"),
-                Coin::new(1_000_000_000_000, "uosmo"),
-            ])
-            .unwrap();
-
-        let gamm = Gamm::new(&app);
-
-        let pool_liquidity = vec![Coin::new(1_000, "uatom"), Coin::new(1_000, "uosmo")];
-        let pool_id = gamm
-            .create_basic_pool(&pool_liquidity, &alice)
-            .unwrap()
-            .data
-            .pool_id;
-
-        let pool = gamm.query_pool(pool_id).unwrap();
-
         assert_eq!(
-            pool_liquidity
-                .into_iter()
-                .map(|c| c.into())
-                .collect::<Vec<osmosis_std::types::cosmos::base::v1beta1::Coin>>(),
-            pool.pool_assets
-                .into_iter()
-                .map(|a| a.token.unwrap())
-                .collect::<Vec<osmosis_std::types::cosmos::base::v1beta1::Coin>>(),
-        );
-
-        let wasm = Wasm::new(&app);
-        let wasm_byte_code = std::fs::read("./test_artifacts/cw1_whitelist.wasm").unwrap();
-        let code_id = wasm
-            .store_code(&wasm_byte_code, None, &alice)
-            .unwrap()
-            .data
-            .code_id;
-
-        assert_eq!(code_id, 1);
+            standard_reasons,
+            [
+                StandardReason {
+                    id: 1,
+                    title: "Spam".to_string(),
+                    description: "Signal that the reported entity is spam".to_string()
+                },
+                StandardReason {
+                    id: 2,
+                    title: "Misinformative".to_string(),
+                    description: "Signal that the reported entity is misinformative".to_string()
+                }
+            ]
+        )
     }
 
     #[test]
@@ -314,13 +284,7 @@ mod tests {
 
         let app = DesmosTestApp::default();
         let accs = app
-            .init_accounts(
-                &[
-                    Coin::new(1_000_000_000_000, "uatom"),
-                    Coin::new(1_000_000_000_000, "uosmo"),
-                ],
-                2,
-            )
+            .init_accounts(&[coin(1_000_000_000_000, "udsm")], 2)
             .unwrap();
         let admin = &accs[0];
         let new_admin = &accs[1];
@@ -367,7 +331,7 @@ mod tests {
             &[],
             admin,
         )
-            .unwrap();
+        .unwrap();
 
         let admin_list = wasm
             .query::<QueryMsg, AdminListResponse>(&contract_addr, &QueryMsg::AdminList {})
@@ -376,171 +340,4 @@ mod tests {
         assert_eq!(admin_list.admins, new_admins);
         assert!(admin_list.mutable);
     }
-
-    #[test]
-    fn test_custom_fee() {
-        let app = DesmosTestApp::default();
-        let initial_balance = 1_000_000_000_000;
-        let alice = app.init_account(&coins(initial_balance, "uosmo")).unwrap();
-        let bob = app.init_account(&coins(initial_balance, "uosmo")).unwrap();
-
-        let amount = Coin::new(1_000_000, "uosmo");
-        let gas_limit = 100_000_000;
-
-        // use FeeSetting::Auto by default, so should not equal newly custom fee setting
-        let wasm = Wasm::new(&app);
-        let wasm_byte_code = std::fs::read("./test_artifacts/cw1_whitelist.wasm").unwrap();
-        let res = wasm.store_code(&wasm_byte_code, None, &alice).unwrap();
-
-        assert_ne!(res.gas_info.gas_wanted, gas_limit);
-
-        //update fee setting
-        let bob = bob.with_fee_setting(FeeSetting::Custom {
-            amount: amount.clone(),
-            gas_limit,
-        });
-        let res = wasm.store_code(&wasm_byte_code, None, &bob).unwrap();
-
-        let bob_balance = Bank::new(&app)
-            .query_all_balances(&QueryAllBalancesRequest {
-                address: bob.address(),
-                pagination: None,
-            })
-            .unwrap()
-            .balances
-            .into_iter()
-            .find(|c| c.denom == "uosmo")
-            .unwrap()
-            .amount
-            .parse::<u128>()
-            .unwrap();
-
-        assert_eq!(res.gas_info.gas_wanted, gas_limit);
-        assert_eq!(bob_balance, initial_balance - amount.amount.u128());
-    }
-
-    #[test]
-    fn test_param_set() {
-        let app = DesmosTestApp::default();
-
-        let whitelisted_users = app
-            .init_accounts(&coins(1_000_000_000_000, "uosmo"), 2)
-            .unwrap();
-
-        let in_pset = lockup::Params {
-            force_unlock_allowed_addresses: whitelisted_users
-                .into_iter()
-                .map(|a| a.address())
-                .collect(),
-        };
-
-        app.set_param_set(
-            "lockup",
-            osmosis_std::shim::Any {
-                type_url: lockup::Params::TYPE_URL.to_string(),
-                value: in_pset.encode_to_vec(),
-            },
-        )
-            .unwrap();
-
-        let out_pset: lockup::Params = app
-            .get_param_set("lockup", lockup::Params::TYPE_URL)
-            .unwrap();
-
-        assert_eq!(in_pset, out_pset);
-    }
-
-    #[test]
-    fn test_set_param_set() {
-        let app = DesmosTestApp::default();
-
-        let balances = vec![
-            Coin::new(1_000_000_000_000, "uosmo"),
-            Coin::new(1_000_000_000_000, "uion"),
-        ];
-        let whitelisted_user = app.init_account(&balances).unwrap();
-
-        // create pool
-        let gamm = Gamm::new(&app);
-        let pool_id = gamm
-            .create_basic_pool(
-                &[Coin::new(1_000_000, "uosmo"), Coin::new(1_000_000, "uion")],
-                &whitelisted_user,
-            )
-            .unwrap()
-            .data
-            .pool_id;
-
-        // query shares
-        let shares = app
-            .query::<QueryTotalSharesRequest, QueryAllBalancesResponse>(
-                "/osmosis.gamm.v1beta1.Query/TotalShares",
-                &QueryTotalSharesRequest { pool_id },
-            )
-            .unwrap()
-            .balances;
-
-        // lock all shares
-        app.execute::<_, MsgLockTokensResponse>(
-            MsgLockTokens {
-                owner: whitelisted_user.address(),
-                duration: Some(osmosis_std::shim::Duration {
-                    seconds: 1000000000,
-                    nanos: 0,
-                }),
-                coins: shares,
-            },
-            MsgLockTokens::TYPE_URL,
-            &whitelisted_user,
-        )
-            .unwrap();
-
-        // try to unlock
-        let err = app
-            .execute::<_, MsgForceUnlockResponse>(
-                MsgForceUnlock {
-                    owner: whitelisted_user.address(),
-                    id: pool_id,
-                    coins: vec![], // all
-                },
-                MsgForceUnlock::TYPE_URL,
-                &whitelisted_user,
-            )
-            .unwrap_err();
-
-        // should fail
-        assert_eq!(err,  RunnerError::ExecuteError {
-            msg: format!("failed to execute message; message index: 0: Sender ({}) not allowed to force unlock: unauthorized", whitelisted_user.address()),
-        });
-
-        // add whitelisted user to param set
-        app.set_param_set(
-            "lockup",
-            Any {
-                type_url: lockup::Params::TYPE_URL.to_string(),
-                value: lockup::Params {
-                    force_unlock_allowed_addresses: vec![whitelisted_user.address()],
-                }
-                    .encode_to_vec(),
-            },
-        )
-            .unwrap();
-
-        // unlock again after adding whitelisted user
-        let res = app
-            .execute::<_, MsgForceUnlockResponse>(
-                MsgForceUnlock {
-                    owner: whitelisted_user.address(),
-                    id: pool_id,
-                    coins: vec![], // all
-                },
-                MsgForceUnlock::TYPE_URL,
-                &whitelisted_user,
-            )
-            .unwrap();
-
-        // should succeed
-        assert!(res.data.success);
-    }
-    */
 }

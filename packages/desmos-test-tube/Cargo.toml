@@ -21,6 +21,7 @@ thiserror = "1.0.43"
 
 [dev-dependencies]
 hex = { version = "0.4.3" }
+cw1-whitelist = "0.15.0"
 
 [build-dependencies]
 bindgen = "0.66.1"
