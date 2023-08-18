@@ -141,7 +141,7 @@ func SetupDesmosApp(nodeHome string, chainId string, stakingDenom string) (*app.
 	authGenesisState.Accounts = append(authGenesisState.Accounts, anyTestAccount)
 	genesisState[authtypes.ModuleName] = encodingConfig.Codec.MustMarshalJSON(&authGenesisState)
 
-	// Setup the bank module so that the test account will have some founds at genesis
+	// Set up the bank module so that the test account will have some founds at genesis
 	bankGenesisState := banktypes.DefaultGenesisState()
 	bankGenesisState.Balances = append(bankGenesisState.Balances, banktypes.Balance{
 		Address: testAccount.Address,
@@ -160,6 +160,22 @@ func SetupDesmosApp(nodeHome string, chainId string, stakingDenom string) (*app.
 
 	genutilGen.GenTxs = append(genutilGen.GenTxs, encodedTx)
 	genesisState[genutiltypes.ModuleName] = encodingConfig.Codec.MustMarshalJSON(genutilGen)
+
+	// Set up the reports module
+	reportsGenesisState := reports.DefaultGenesisState()
+	reportsGenesisState.Params.StandardReasons = append(reportsGenesisState.Params.StandardReasons,
+		reports.StandardReason{
+			ID:          1,
+			Title:       "Spam",
+			Description: "Signal that the reported entity is spam",
+		},
+		reports.StandardReason{
+			ID:          2,
+			Title:       "Misinformative",
+			Description: "Signal that the reported entity is misinformative",
+		},
+	)
+	genesisState[reports.ModuleName] = encodingConfig.Codec.MustMarshalJSON(reportsGenesisState)
 
 	stateBytes, err := json.MarshalIndent(genesisState, "", " ")
 	requireNoErr(err)
