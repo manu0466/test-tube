@@ -11,7 +11,9 @@ use desmos_bindings::reactions::types::{
     RegisteredReaction,
 };
 use desmos_bindings::subspaces::msg::SubspacesMsg;
-use desmos_bindings::subspaces::types::{QuerySubspaceRequest, Subspace};
+use desmos_bindings::subspaces::types::{
+    QuerySectionRequest, QuerySubspaceRequest, QueryUserGroupRequest, Section, Subspace, UserGroup,
+};
 use test_tube::{Account, Module, SigningAccount};
 
 /// Create a profile for the specified account.
@@ -187,5 +189,81 @@ pub fn create_test_registered_reaction(
         })
         .unwrap()
         .registered_reaction
+        .unwrap()
+}
+
+/// Create a test [Section] in the subspace with the provided subspace ID.
+/// - `app`: Environment in which the section will be created.
+/// - `account`: Account used to create the section.
+/// - `subspace_id`: ID of the subspace where the [Section] will be created.
+pub fn create_test_section(
+    app: &DesmosTestApp,
+    account: &SigningAccount,
+    subspace_id: u64,
+) -> Section {
+    let subspaces = Subspaces::new(app);
+
+    let created_section_id = subspaces
+        .create_section(
+            SubspacesMsg::create_section(
+                subspace_id,
+                "test section",
+                "test section description",
+                0,
+                Addr::unchecked(account.address()),
+            ),
+            account,
+        )
+        .unwrap()
+        .data
+        .section_id;
+
+    subspaces
+        .query_section(&QuerySectionRequest {
+            subspace_id,
+            section_id: created_section_id,
+        })
+        .unwrap()
+        .section
+        .unwrap()
+}
+
+/// Create a test [UserGroup] in the subspace with the provided subspace ID.
+/// - `app`: Environment in which the [UserGroup] will be created.
+/// - `account`: Account used to create the [UserGroup].
+/// - `subspace_id`: ID of the subspace where the [UserGroup] will be created.
+/// - `section_id`: ID of the section where the [UserGroup] will be created.
+pub fn create_test_user_group(
+    app: &DesmosTestApp,
+    account: &SigningAccount,
+    subspace_id: u64,
+    section_id: u32,
+) -> UserGroup {
+    let subspaces = Subspaces::new(app);
+
+    let created_user_group_id = subspaces
+        .create_user_group(
+            SubspacesMsg::create_user_group(
+                subspace_id,
+                section_id,
+                "test group",
+                "test group description",
+                vec![],
+                vec![],
+                Addr::unchecked(account.address()),
+            ),
+            account,
+        )
+        .unwrap()
+        .data
+        .group_id;
+
+    subspaces
+        .query_user_group(&QueryUserGroupRequest {
+            subspace_id,
+            group_id: created_user_group_id,
+        })
+        .unwrap()
+        .group
         .unwrap()
 }
