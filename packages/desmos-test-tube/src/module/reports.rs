@@ -29,7 +29,7 @@ where
     fn_execute! { pub create_report: MsgCreateReport => MsgCreateReportResponse }
     fn_execute! { pub delete_report: MsgDeleteReport => MsgDeleteReportResponse }
     fn_execute! { pub support_standard_reason: MsgSupportStandardReason => MsgSupportStandardReasonResponse }
-    fn_execute! { pub ddd_reason: MsgAddReason => MsgAddReasonResponse }
+    fn_execute! { pub add_reason: MsgAddReason => MsgAddReasonResponse }
     fn_execute! { pub remove_reason: MsgRemoveReason => MsgRemoveReasonResponse }
     fn_execute! { pub update_params: MsgUpdateParams => MsgUpdateParamsResponse }
 
